@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Hackeamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #log {
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            font-size: 14px;
+            line-height: 1.6;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        #log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #log::-webkit-scrollbar-track {
+            background: #0a0e27;
+        }
+
+        #log::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        .glitch {
+            animation: shake 0.09s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0); }
+            50% { transform: translate(-2px, 2px); }
+            100% { transform: translate(2px, -2px); }
+        }
+
+        .flash {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #ff0000;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .linha-log {
+            margin: 5px 0;
+            animation: apareceTexto 0.3s ease-out;
+        }
+
+        @keyframes apareceTexto {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .linha-erro {
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        .linha-aviso {
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        .linha-sucesso {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .linha-info {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .cursor-piscante::after {
+            content: '_';
+            animation: piscar 0.7s infinite;
+        }
+
+        @keyframes piscar {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .barra-progresso {
+            width: 100%;
+            height: 20px;
+            background: #1a1f3a;
+            border: 1px solid #00ff00;
+            margin: 10px 0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .barra-progresso-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00ffff);
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .finalizado {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 20px;
+            animation: pulsar 1s infinite;
+        }
+
+        @keyframes pulsar {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .divisor {
+            border-top: 1px solid #00ff00;
+            margin: 20px 0;
+            opacity: 0.3;
+        }
+
+        #contador {
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            font-size: 16px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .alarme-visual {
+            animation: alarmeFlash 0.3s infinite;
+        }
+
+        @keyframes alarmeFlash {
+            0%, 100% { background: #0a0e27; }
+            50% { background: #1a0000; }
+        }
+    </style>
+</head>
+<body>
+    <div id="contador"></div>
+    <div id="log"></div>
+    <div class="flash" id="flash"></div>
+
+    <script>
+        let log = document.getElementById("log");
+        let flash = document.getElementById("flash");
+        let contador = document.getElementById("contador");
+
+        function escrever(txt, tipo = "info") {
+            let linha = document.createElement("div");
+            linha.className = `linha-log linha-${tipo}`;
+            linha.innerText = txt;
+            log.appendChild(linha);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function gerarArquivo() {
+            let nomes = ["sys", "data", "core", "user", "temp", "cache", "kernel", "memory"];
+            let ext = [".dll", ".exe", ".sys", ".dat", ".bin", ".cfg", ".log"];
+            return nomes[Math.floor(Math.random() * nomes.length)] +
+                "_" +
+                Math.floor(Math.random() * 9999) +
+                ext[Math.floor(Math.random() * ext.length)];
+        }
+
+        function mostrarBarraProgresso() {
+            let div = document.createElement("div");
+            div.className = "barra-progresso";
+            
+            let fill = document.createElement("div");
+            fill.className = "barra-progresso-fill";
+            
+            div.appendChild(fill);
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+            
+            return fill;
+        }
+
+        function falar() {
+            let msg = new SpeechSynthesisUtterance("você fez porque quis");
+            msg.lang = "pt-BR";
+            msg.pitch = 0.8;
+            msg.rate = 0.8;
+            speechSynthesis.speak(msg);
+        }
+
+        function piscarFlash(duracao = 300) {
+            flash.style.opacity = 0.5;
+            setTimeout(() => {
+                flash.style.opacity = 0;
+            }, duracao);
+        }
+
+        function tocarAlarme(duracao = 2000) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'square';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+
+            let startTime = audioContext.currentTime;
+            let endTime = startTime + (duracao / 1000);
+
+            // Efeito pulsante
+            while (startTime < endTime) {
+                gainNode.gain.setValueAtTime(0.3, startTime);
+                gainNode.gain.setValueAtTime(0, startTime + 0.15);
+                startTime += 0.3;
+            }
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + (duracao / 1000));
+        }
+
+        function alarmeCompleto() {
+            // Alarme visual
+            document.body.classList.add("alarme-visual");
+            
+            // Alarme sonoro
+            tocarAlarme(2000);
+            
+            setTimeout(() => {
+                document.body.classList.remove("alarme-visual");
+            }, 2000);
+        }
+
+        /* INÍCIO NORMAL */
+        escrever("════════════════════════════════════════════════════════", "info");
+        escrever("SISTEMA OPERACIONAL CARREGADO COM SUCESSO", "sucesso");
+        escrever("════════════════════════════════════════════════════════", "info");
+        escrever("", "info");
+        escrever("Versão: 12.4.8 Build 2048", "info");
+        escrever("CPU: Intel Core i9-12900K", "info");
+        escrever("RAM: 64GB DDR5", "info");
+        escrever("", "info");
+        escrever("Aguardando entrada do usuário...", "info");
+
+        /* ⏳ ESPERA INICIAL */
+        setTimeout(() => {
+            escrever("", "info");
+            escrever("► ALERTA: Processo desconhecido detectado!", "erro");
+            escrever("► Tentando identificar origem...", "aviso");
+            escrever("", "info");
+
+            setTimeout(() => {
+                escrever("Analisando pacotes de rede...", "aviso");
+                
+                document.body.classList.add("glitch");
+                alarmeCompleto(); // ALARME ATIVADO!
+
+                let barra = mostrarBarraProgresso();
+                let i = 0;
+                const total = 35;
+
+                escrever("", "info");
+                escrever("Iniciando seqüência de infecção...", "erro");
+                escrever("", "info");
+
+                let spam = setInterval(() => {
+                    escrever(`[${i + 1}/${total}] Infectando: ${gerarArquivo()}`, "erro");
+                    
+                    let progresso = ((i + 1) / total) * 100;
+                    barra.style.width = progresso + "%";
+                    
+                    i++;
+
+                    if (i >= total) {
+                        clearInterval(spam);
+                        
+                        escrever("", "info");
+                        escrever("════════════════════════════════════════════════════════", "erro");
+                        escrever("INFECÇÃO COMPLETA - 100%", "erro");
+                        escrever("════════════════════════════════════════════════════════", "erro");
+                        escrever("", "info");
+
+                        piscarFlash(500);
+                        
+                        setTimeout(() => {
+                            falar();
+                            
+                            setTimeout(() => {
+                                piscarFlash(300);
+                                
+                                setTimeout(() => {
+                                    finalizar();
+                                }, 1000);
+                            }, 1500);
+                        }, 500);
+                    }
+                }, 80);
+
+            }, 1500);
+
+        }, 2000);
+
+        function finalizar() {
+            document.body.classList.remove("glitch");
+            contador.innerHTML = "";
+            
+            escrever("", "info");
+            escrever("════════════════════════════════════════════════════════", "sucesso");
+            escrever("", "sucesso");
+            
+            let mensagem = document.createElement("div");
+            mensagem.className = "finalizado linha-sucesso";
+            mensagem.innerHTML = "✓ kkk foi nada não 😄";
+            log.appendChild(mensagem);
+            
+            escrever("", "info");
+            escrever("════════════════════════════════════════════════════════", "sucesso");
+            
+            setTimeout(() => {
+                escrever("Sistema retornando ao modo normal...", "info");
+                escrever("", "info");
+                escrever("► Status: SEGURO", "sucesso");
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

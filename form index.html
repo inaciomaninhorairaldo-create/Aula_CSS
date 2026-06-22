@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Interesses</title>
+    <style>
+        /* Estilo geral */
+        body {
+            background-color: #f0f8f5; /* Fundo verde claro */
+            color: #004d00; /* Texto verde escuro */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            animation: fadeIn 1.5s ease-in; /* Animação de entrada */
+        }
+
+        /* Cabeçalho */
+        header {
+            background-color: #008000; /* Fundo verde */
+            color: #ffffff; /* Texto branco */
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        /* Conteúdo principal */
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff; /* Fundo branco */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+        }
+
+        p {
+            font-size: 1.2em;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            animation: slideIn 1.5s ease-out; /* Animação de entrada da imagem */
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="text"], input[type="radio"], input[type="checkbox"] {
+            margin-top: 5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #008000; /* Fundo do botão verde */
+            color: #ffffff; /* Texto do botão branco */
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+            border-radius: 5px;
+            transition: background-color 0.3s ease; /* Transição suave */
+        }
+
+        button:hover {
+            background-color: #006400; /* Fundo do botão verde escuro ao passar o mouse */
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #004d00; /* Fundo verde escuro */
+            color: #ffffff; /* Texto branco */
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cadastro de Interesses</h1>
+    </header>
+    <main>
+        <p>Nome do aluno: Rairaldo Inácio Marinho</p>
+        <img src="Captura de tela 2026-04-13 153303.png" alt="Imagem do aluno">
+
+        <form id="formCadastro" action="https://nic.ifrn.edu.br/aulas/atividade_03/" method="post">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+            <span class="error" id="nomeError"></span>
+            <br><br>
+
+            <p>Selecione seu curso:</p>
+            <input type="radio" id="curso1" name="curso" value="Informática">
+            <label for="curso1">Informática</label><br>
+            <input type="radio" id="curso2" name="curso" value="Eletrotécnica">
+            <label for="curso2">Eletrotécnica</label><br>
+            <input type="radio" id="curso3" name="curso" value="Mecânica">
+            <label for="curso3">Mecânica</label><br>
+            <span class="error" id="cursoError"></span>
+            <br><br>
+
+            <p>Quais são seus interesses?</p>
+            <input type="checkbox" id="interesse1" name="interesses[]" value="Programação">
+            <label for="interesse1">Programação</label><br>
+            <input type="checkbox" id="interesse2" name="interesses[]" value="Robótica">
+            <label for="interesse2">Robótica</label><br>
+            <input type="checkbox" id="interesse3" name="interesses[]" value="Design">
+            <label for="interesse3">Design</label><br>
+            <input type="checkbox" id="interesse4" name="interesses[]" value="Jogos">
+            <label for="interesse4">Jogos</label><br>
+            <span class="error" id="interessesError"></span>
+            <br><br>
+
+            <button type="button" onclick="validarFormulario()">Enviar</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2026 - Desenvolvido por Rairaldo Inácio Marinho</p>
+    </footer>
+
+    <script>
+        function validarFormulario() {
+            let nome = document.getElementById("nome").value.trim();
+            let curso = document.querySelector('input[name="curso"]:checked');
+            let interesses = document.querySelectorAll('input[name="interesses[]"]:checked');
+
+            let nomeError = document.getElementById("nomeError");
+            let cursoError = document.getElementById("cursoError");
+            let interessesError = document.getElementById("interessesError");
+
+            let isValid = true;
+
+            // Validação do nome
+            if (nome === "") {
+                nomeError.textContent = "O nome é obrigatório.";
+                isValid = false;
+            } else {
+                nomeError.textContent = "";
+            }
+
+            // Validação do curso
+            if (!curso) {
+                cursoError.textContent = "Selecione um curso.";
+                isValid = false;
+            } else {
+                cursoError.textContent = "";
+            }
+
+            // Validação dos interesses
+            if (interesses.length === 0) {
+                interessesError.textContent = "Selecione pelo menos um interesse.";
+                isValid = false;
+            } else {
+                interessesError.textContent = "";
+            }
+
+            // Se tudo estiver válido, submeter o formulário
+            if (isValid) {
+                document.getElementById("formCadastro").submit();
+            }
+        }
+    </script>
+</body>
+</html>

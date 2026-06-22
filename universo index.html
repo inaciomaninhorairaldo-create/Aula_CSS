@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Deep Space Simulation Engine v6.0 - Edição Expandida</title>
+    <style>
+        :root {
+            --neon-blue: #00f2fe;
+            --neon-purple: #9d4edd;
+            --neon-pink: #ff0055;
+            --bg-dark: #020206;
+            --panel-bg: rgba(3, 3, 10, 0.88);
+            --border-glow: rgba(0, 242, 254, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* PAINEL HUD INTERFACE SCI-FI AVANÇADA */
+        .hud-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: grid;
+            grid-template-columns: 360px 1fr 360px;
+            grid-template-rows: 75px 1fr 50px;
+            padding: 20px;
+        }
+
+        .interactive {
+            pointer-events: auto;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 6px;
+            padding: 20px;
+            color: #ffffff;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.85);
+        }
+
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-glow);
+            background: rgba(2, 2, 6, 0.9);
+            padding: 0 25px;
+            border-radius: 4px;
+        }
+
+        .title-unit h1 {
+            color: var(--neon-blue);
+            font-size: 18px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.7);
+        }
+
+        .title-unit span {
+            color: #4b5563;
+            font-size: 10px;
+            letter-spacing: 2px;
+        }
+
+        #engine-perf {
+            color: var(--neon-blue);
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            gap: 25px;
+        }
+
+        /* Menu de Controle Lateral Esquerdo */
+        .sidebar-controls {
+            grid-column: 1;
+            grid-row: 2;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 82vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-controls::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-controls::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+        }
+
+        .section-header {
+            color: var(--neon-purple);
+            font-size: 11px;
+            text-transform: uppercase;
+            border-bottom: 1px dashed var(--border-glow);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .control-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-wrapper label {
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-wrapper label span {
+            color: var(--neon-blue);
+        }
+
+        .control-wrapper input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            height: 4px;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .control-wrapper input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neon-blue);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* Painel de Telemetria Direito */
+        .sidebar-telemetry {
+            grid-column: 3;
+            grid-row: 2;
+            margin-top: 15px;
+            font-size: 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 82vh;
+            overflow-y: auto;
+        }
+
+        .telemetry-item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 5px;
+        }
+
+        .telemetry-item .value {
+            color: var(--neon-blue);
+        }
+
+        footer {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #4b5563;
+            border-top: 1px solid var(--border-glow);
+            padding: 0 15px;
+        }
+
+        .system-good {
+            color: #10b981;
+            text-shadow: 0 0 6px #10b981;
+        }
+
+        .cosmic-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(0, 242, 254, 0.01) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 242, 254, 0.01) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 2;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cosmic-grid"></div>
+    <div id="canvas-container"></div>
+
+    <div class="hud-container">
+        <header class="interactive">
+            <div class="title-unit">
+                <h1>Quantum Space Engine</h1>
+                <span>MÉTRICAS DE SIMULAÇÃO EM TEMPO REAL v6.0</span>
+            </div>
+            <div id="engine-perf">
+                <div id="fps-display">FPS: --</div>
+                <div id="ms-display">LAT: -- ms</div>
+            </div>
+        </header>
+
+        <div class="sidebar-controls panel interactive">
+            <div class="section-header">Topologia do Núcleo Galáctico</div>
+            <div class="control-wrapper">
+                <label>Velocidade de Rotação <span id="lbl-speed">1.00</span></label>
+                <input type="range" id="input-speed" min="0" max="3" step="0.05" value="1.00">
+            </div>
+            <div class="control-wrapper">
+                <label>Compactação de Massa <span id="lbl-density">4.50</span></label>
+                <input type="range" id="input-density" min="1" max="8" step="0.1" value="4.50">
+            </div>
+            <div class="control-wrapper">
+                <label>Raio do Horizonte de Eventos <span id="lbl-radius">9.50</span></label>
+                <input type="range" id="input-radius" min="4" max="15" step="0.5" value="9.50">
+            </div>
+
+            <div class="section-header">Estrutura Espiral</div>
+            <div class="control-wrapper">
+                <label>Giro Angular dos Braços <span id="lbl-spin">1.40</span></label>
+                <input type="range" id="input-spin" min="-3" max="3" step="0.1" value="1.40">
+            </div>
+            <div class="control-wrapper">
+                <label>Entropia Espacial (Caos) <span id="lbl-chaos">0.35</span></label>
+                <input type="range" id="input-chaos" min="0" max="1.5" step="0.05" value="0.35">
+            </div>
+
+            <div class="section-header">Arquitetura Óptica</div>
+            <div class="control-wrapper">
+                <label>Intensidade do Brilho (Bloom) <span id="lbl-bloom">2.50</span></label>
+                <input type="range" id="input-bloom" min="0" max="5" step="0.1" value="2.50">
+            </div>
+            <div class="control-wrapper">
+                <label>Escala de Tamanho das Estrelas <span id="lbl-ptsize">28</span></label>
+                <input type="range" id="input-ptsize" min="5" max="60" step="1" value="28">
+            </div>
+            
+            <div class="section-header">Cinemática Planetária</div>
+            <div class="control-wrapper">
+                <label>Velocidade de Órbita <span id="lbl-planetspeed">1.00</span></label>
+                <input type="range" id="input-planetspeed" min="0" max="4" step="0.1" value="1.00">
+            </div>
+        </div>
+
+        <div class="sidebar-telemetry panel">
+            <div class="section-header">Telemetria de Hardware</div>
+            <div class="telemetry-item"><span>CONTEXTO_GRÁFICO</span><span class="value">WEBGL_2.0_CORE</span></div>
+            <div class="telemetry-item"><span>LINGUAGEM_SHADER</span><span class="value">GLSL_ES_300</span></div>
+            <div class="telemetry-item"><span>VÉRTICES_TOTAIS_VBO</span><span class="value">440.000</span></div>
+            <div class="telemetry-item"><span>ALOCAÇÃO_BUFFERS_VRAM</span><span class="value">34.2 MB</span></div>
+            <div class="telemetry-item"><span>CICLO_DE_MEMÓRIA</span><span class="value">ESTÁVEL</span></div>
+            
+            <div class="section-header" style="margin-top:15px;">Cálculos de Tensores</div>
+            <div class="telemetry-item"><span>MOMENTO_ANGULAR</span><span class="value" id="tel-ang">0.00000</span></div>
+            <div class="telemetry-item"><span>TAXA_EXPANSÃO_NÚCLEO</span><span class="value" id="tel-exp">0.00000</span></div>
+            <div class="telemetry-item"><span>PILOTO_AUTOMÁTICO</span><span class="value" id="tel-pilot">STANDBY</span></div>
+            <div class="telemetry-item"><span>DRAWCALLS_ATIVAS</span><span class="value">6</span></div>
+
+            <div class="section-header" style="margin-top:15px;">Vetores Orbitais</div>
+            <div class="telemetry-item"><span>PLANETA_1_X / Z</span><span class="value" id="tel-p1">0.00 / 0.00</span></div>
+            <div class="telemetry-item"><span>PLANETA_2_X / Z</span><span class="value" id="tel-p2">0.00 / 0.00</span></div>
+            <div class="telemetry-item"><span>PLANETA_3_X / Z</span><span class="value" id="tel-p3">0.00 / 0.00</span></div>
+        </div>
+
+        <footer>
+            <div>SISTEMA_PRINCIPAL: <span class="system-good">OPERACIONAL</span></div>
+            <div>PIPELINE_DE_RENDER: ARQUIVO_ÚNICO_ESTENDIDO_GLSL</div>
+            <div>© 2026 LABORATÓRIOS DE COSMOLOGIA QUANTUM</div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+    <script>
+        /**
+         * SUB-MÓDULO DE TEXTURAS PROCEDURAIS AVANÇADAS VIA ARRAYS DE MEMÓRIA (CANVAS 2D)
+         */
+        class GeradorTexturaProcedural {
+            static criarTexturaMagma() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512; canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.createImageData(512, 512);
+                
+                for (let x = 0; x < 512; x++) {
+                    for (let y = 0; y < 512; y++) {
+                        const index = (x + y * 512) * 4;
+                        // Ruído matemático baseado em senos compostos alternados
+                        const n1 = Math.sin(x * 0.04) * Math.cos(y * 0.04) * 8;
+                        const n2 = Math.sin(x * 0.08 + n1) * 4;
+                        const n3 = Math.cos(y * 0.12 + n2) * 2;
+                        const finalNoise = n1 + n2 + n3;
+                        
+                        const r = Math.min(255, Math.max(0, 190 + Math.sin(finalNoise * 0.15) * 65));
+                        const g = Math.min(255, Math.max(0, 50 + Math.cos(finalNoise * 0.2) * 40));
+                        const b = 10;
+                        
+                        imgData.data[index]     = Math.floor(r);
+                        imgData.data[index + 1] = Math.floor(g);
+                        imgData.data[index + 2] = Math.floor(b);
+                        imgData.data[index + 3] = 255;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+                const textura = new THREE.CanvasTexture(canvas);
+                textura.wrapS = THREE.RepeatWrapping;
+                textura.wrapT = THREE.RepeatWrapping;
+                return textura;
+            }
+
+            static criarTexturaGiganteGasoso() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512; canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                
+                for(let y = 0; y < 512; y++) {
+                    // Simulação de correntes atmosféricas por modulação de frequência de ondas senoidais
+                    const freqMod = Math.sin(y * 0.08) * 20 + Math.sin(y * 0.015) * 55;
+                    const r = Math.min(255, Math.max(0, 135 + Math.sin(freqMod * 0.04) * 45));
+                    const g = Math.min(255, Math.max(0, 95 + Math.cos(freqMod * 0.02) * 25));
+                    const b = Math.min(255, Math.max(0, 165 + Math.sin(freqMod * 0.03) * 55));
+                    
+                    ctx.fillStyle = `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`;
+                    ctx.fillRect(0, y, 512, 1);
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            static criarTexturaAtmosferica(cor1, cor2) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512; canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                const grad = ctx.createLinearGradient(0, 0, 0, 512);
+                grad.addColorStop(0, cor1);
+                grad.addColorStop(0.35, cor2);
+                grad.addColorStop(0.7, cor1);
+                grad.addColorStop(1, cor2);
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, 512, 512);
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+                for(let i = 0; i < 70; i++) {
+                    ctx.fillRect(Math.random() * 512, Math.random() * 512, Math.random() * 120, Math.random() * 18);
+                }
+                return new THREE.CanvasTexture(canvas);
+            }
+        }
+
+        /**
+         * ESTRUTURA POO EXPANDIDA: CLASSES ESPECÍFICAS PARA CADA PLANETA (HERANÇA)
+         */
+        class CorpoCelesteBase {
+            constructor(nome, tamanho, distancia, velocidade, corGlow, textura) {
+                this.nome = nome;
+                this.tamanho = tamanho;
+                this.distancia = distancia;
+                this.baseSpeed = velocidade;
+                this.corGlow = corGlow;
+                this.textura = textura;
+                this.angle = Math.random() * Math.PI * 2;
+                
+                this.grupoRaiz = new THREE.Group();
+                this.meshPrincipal = null;
+                this.meshAtmosfera = null;
+            }
+
+            inicializarMalhas() {
+                const geo = new THREE.SphereGeometry(this.tamanho, 32, 32);
+                const mat = new THREE.MeshStandardMaterial({
+                    map: this.textura,
+                    roughness: 0.75,
+                    metalness: 0.15
+                });
+                this.meshPrincipal = new THREE.Mesh(geo, mat);
+                this.grupoRaiz.add(this.meshPrincipal);
+
+                const geoAtmos = new THREE.SphereGeometry(this.tamanho * 1.06, 32, 32);
+                const matAtmos = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(this.corGlow),
+                    transparent: true,
+                    opacity: 0.14,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.BackSide
+                });
+                this.meshAtmosfera = new THREE.Mesh(geoAtmos, matAtmos);
+                this.grupoRaiz.add(this.meshAtmosfera);
+            }
+
+            atualizarPosicaoCinematica(dt, multiplicadorVelocidade) {
+                this.angle += this.baseSpeed * dt * multiplicadorVelocidade * 0.2;
+                
+                // Matriz de posicionamento por cálculo trigonométrico por extenso
+                this.meshPrincipal.position.x = Math.cos(this.angle) * this.distancia;
+                this.meshPrincipal.position.z = Math.sin(this.angle) * this.distancia;
+                this.meshPrincipal.rotation.y += 0.45 * dt;
+
+                if (this.meshAtmosfera) {
+                    this.meshAtmosfera.position.copy(this.meshPrincipal.position);
+                }
+            }
+        }
+
+        class PlanetaMagma extends CorpoCelesteBase {
+            inicializarMalhas() {
+                super.inicializarMalhas();
+                this.meshPrincipal.material.emissive = new THREE.Color('#4a1200');
+                this.meshPrincipal.material.emissiveIntensity = 1.2;
+            }
+        }
+
+        class PlanetaGasoso extends CorpoCelesteBase {
+            constructor(nome, tamanho, distancia, velocidade, corGlow, textura) {
+                super(nome, tamanho, distancia, velocidade, corGlow, textura);
+                this.meshAneis = null;
+            }
+
+            inicializarMalhas() {
+                super.inicializarMalhas();
+                const numParticulas = 30000;
+                const geoAneis = new THREE.BufferGeometry();
+                const posições = new Float32Array(numParticulas * 3);
+                const cores = new Float32Array(numParticulas * 3);
+                const corAnel = new THREE.Color(this.corGlow);
+
+                for(let r = 0; r < numParticulas; r++) {
+                    const r3 = r * 3;
+                    const raioInterno = this.tamanho * 1.35 + Math.random() * 1.4;
+                    const anguloAlvo = Math.random() * Math.PI * 2;
+
+                    posições[r3]     = Math.cos(anguloAlvo) * raioInterno;
+                    posições[r3 + 1] = (Math.random() - 0.5) * 0.025;
+                    posições[r3 + 2] = Math.sin(anguloAlvo) * raioInterno;
+
+                    cores[r3]     = corAnel.r * (0.5 + Math.random() * 0.5);
+                    cores[r3 + 1] = corAnel.g * (0.5 + Math.random() * 0.5);
+                    cores[r3 + 2] = corAnel.b * (0.5 + Math.random() * 0.5);
+                }
+
+                geoAneis.setAttribute('position', new THREE.BufferAttribute(posições, 3));
+                geoAneis.setAttribute('color', new THREE.BufferAttribute(cores, 3));
+
+                const matAneis = new THREE.PointsMaterial({
+                    size: 0.018,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.55,
+                    blending: THREE.AdditiveBlending
+                });
+
+                this.meshAneis = new THREE.Points(geoAneis, matAneis);
+                this.grupoRaiz.add(this.meshAneis);
+            }
+
+            atualizarPosicaoCinematica(dt, multiplicadorVelocidade) {
+                super.atualizarPosicaoCinematica(dt, multiplicadorVelocidade);
+                if(this.meshAneis) {
+                    this.meshAneis.position.copy(this.meshPrincipal.position);
+                    this.meshAneis.rotation.y -= 0.12 * dt;
+                }
+            }
+        }
+
+        class PlanetaAtmosfericoPadrao extends CorpoCelesteBase {
+            // Implementa lógica herdada direta para planetas Rochosos, Gelo, Oceânicos e Tóxicos
+        }
+
+        /**
+         * MOTOR GRÁFICO CENTRAL DA SIMULAÇÃO
+         */
+        class QuantumSpaceEngine {
+            constructor() {
+                this.container = document.getElementById('canvas-container');
+                
+                this.params = {
+                    speed: 1.00,
+                    density: 4.50,
+                    radius: 9.50,
+                    branches: 5,
+                    spin: 1.40,
+                    chaos: 0.35,
+                    bloom: 2.50,
+                    ptSize: 28,
+                    planetSpeed: 1.00
+                };
+
+                this.perf = { frames: 0, lastTime: performance.now(), frameTime: 0 };
+                this.idleTime = 0;
+                this.isUserInteracting = false;
+
+                this.initNucleoGrafico();
+                this.initCodigosFontesShaderGLSL();
+                this.construirNucleoVortexGalactico();
+                this.construirSistemaPlanetarioPOO();
+                this.construirCinturaoAsteroidesInstanced();
+                this.initPipelinePosProcessamentoAvancado();
+                this.configurarInterfaceEBindings();
+                this.conectarOuvintesEventos();
+                
+                this.clock = new THREE.Clock();
+                this.executarLoopRenderizacao();
+            }
+
+            initNucleoGrafico() {
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color('#010103');
+                this.scene.fog = new THREE.FogExp2('#010103', 0.035);
+
+                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+                this.camera.position.set(0, 12, 18);
+
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: false,
+                    powerPreference: "high-performance",
+                    stencil: false,
+                    depth: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.35;
+                this.container.appendChild(this.renderer.domElement);
+
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.maxDistance = 32;
+                this.controls.minDistance = 2.5;
+
+                const luzAmbiente = new THREE.AmbientLight('#111125');
+                this.scene.add(luzAmbiente);
+
+                const luzPontoCentral = new THREE.PointLight('#00f2fe', 3.5, 35);
+                luzPontoCentral.position.set(0, 0, 0);
+                this.scene.add(luzPontoCentral);
+            }
+
+            /**
+             * CONSTRUÇÃO DE SHADERS INJETADOS COM RUÍDO MATEMÁTICO ALVO (GLSL)
+             */
+            initCodigosFontesShaderGLSL() {
+                // Inclusão de funções de ruído Simplex procedurais escritas manualmente em GLSL
+                this.galaxyVertexShader = `
+                    uniform float uTime;
+                    uniform float uSize;
+                    uniform float uSpeed;
+                    uniform float uSpin;
+                    uniform float uDensity;
+                    
+                    attribute float aScale;
+                    attribute vec3 aRandomness;
+                    
+                    varying vec3 vColor;
+                    varying float vDistance;
+
+                    // Gerador de onda senoidal composta para simular dispersão de braço estrutural
+                    float calcularRuidoEspacial(vec3 pos) {
+                        return sin(pos.x * 2.0) * cos(pos.z * 2.0) * 0.5 + sin(pos.y * 5.0) * 0.25;
+                    }
+
+                    void main() {
+                        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+                        float distanceToCenter = length(modelPosition.xz);
+                        vDistance = distanceToCenter;
+                        
+                        // Equações de Rotação Angular Keplerianas Diferenciais por Extenso
+                        float angle = atan(modelPosition.x, modelPosition.z);
+                        float orbitalVelocity = (1.0 / (0.12 + pow(distanceToCenter, 0.58))) * uTime * 0.42 * uSpeed;
+                        angle += orbitalVelocity;
+                        
+                        modelPosition.x = cos(angle) * distanceToCenter;
+                        modelPosition.z = sin(angle) * distanceToCenter;
+                        
+                        // Injeção do ruído procedural para turbulência orbital tridimensional
+                        float mNoise = calcularRuidoEspacial(modelPosition.xyz * uDensity);
+                        modelPosition.xyz += aRandomness * (uChaos * distanceToCenter * mNoise + 0.1);
+                        modelPosition.y += sin(uTime * 0.65 + distanceToCenter * 1.15) * (distanceToCenter * 0.038);
+
+                        vec4 viewPosition = viewMatrix * modelPosition;
+                        vec4 projectedPosition = projectionMatrix * viewPosition;
+                        
+                        gl_Position = projectedPosition;
+                        gl_PointSize = uSize * aScale * (1.0 / -viewPosition.z);
+                        
+                        vColor = color;
+                    }
+                `;
+
+                // Adiciona a variável uniforme oculta uChaos via injeção de string na compilação do Shader
+                this.galaxyVertexShader = "uniform float uChaos;\n" + this.galaxyVertexShader;
+
+                this.galaxyFragmentShader = `
+                    varying vec3 vColor;
+                    varying float vDistance;
+
+                    void main() {
+                        float rDist = distance(gl_PointCoord, vec2(0.5));
+                        if(rDist > 0.5) { discard; }
+
+                        // Decaimento Exponencial Gaussiano Inverso para Brilho
+                        float intensidadeGlow = 1.0 - (rDist * 2.0);
+                        intensidadeGlow = pow(intensidadeGlow, 4.5);
+                        
+                        // Enriquecimento luminoso denso perto do buraco negro
+                        vec3 efeitoBuracoNegro = vec3(0.09 / (0.004 + vDistance * 0.18));
+                        gl_FragColor = vec4((vColor + efeitoBuracoNegro) * intensidadeGlow, intensidadeGlow);
+                    }
+                `;
+            }
+
+            construirNucleoVortexGalactico() {
+                if(this.galaxyPoints) {
+                    this.galaxyGeometry.dispose();
+                    this.galaxyMaterial.dispose();
+                    this.scene.remove(this.galaxyPoints);
+                }
+
+                this.galaxyGeometry = new THREE.BufferGeometry();
+                const count = 350000;
+                
+                const posições = new Float32Array(count * 3);
+                const cores = new Float32Array(count * 3);
+                const escalas = new Float32Array(count);
+                const aleatoriedade = new Float32Array(count * 3);
+
+                const cCentro = new THREE.Color('#00f2fe');
+                const cMeio = new THREE.Color('#7b2cbf');
+                const cBorda = new THREE.Color('#03001e');
+                const cPoeira = new THREE.Color('#ff0055');
+
+                for(let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    const raio = Math.pow(Math.random(), 1.35) * this.params.radius;
+                    const anguloBraço = ((i % this.params.branches) / this.params.branches) * Math.PI * 2;
+                    const anguloEspiral = raio * this.params.spin;
+
+                    posições[i3]     = Math.cos(anguloBraço + anguloEspiral) * raio;
+                    posições[i3 + 1] = 0;
+                    posições[i3 + 2] = Math.sin(anguloBraço + anguloEspiral) * raio;
+
+                    const fatorCaos = this.params.chaos * raio;
+                    aleatoriedade[i3]     = Math.pow(Math.random(), this.params.density) * (Math.random() < 0.5 ? 1 : -1) * fatorCaos;
+                    aleatoriedade[i3 + 1] = Math.pow(Math.random(), this.params.density) * (Math.random() < 0.5 ? 1 : -1) * fatorCaos * 0.5;
+                    aleatoriedade[i3 + 2] = Math.pow(Math.random(), this.params.density) * (Math.random() < 0.5 ? 1 : -1) * fatorCaos;
+
+                    let corFinal = cCentro.clone();
+                    if(raio < this.params.radius * 0.2) {
+                        corFinal.lerp(cMeio, raio / (this.params.radius * 0.2));
+                    } else if(raio < this.params.radius * 0.6) {
+                        corFinal.lerp(cBorda, (raio - this.params.radius * 0.2) / (this.params.radius * 0.4));
+                    } else {
+                        corFinal.lerp(cPoeira, (raio - this.params.radius * 0.6) / (this.params.radius * 0.4));
+                    }
+
+                    cores[i3]     = corFinal.r;
+                    cores[i3 + 1] = corFinal.g;
+                    cores[i3 + 2] = corFinal.b;
+
+                    escalas[i] = Math.random() * 2.2 + 0.3;
+                }
+
+                this.galaxyGeometry.setAttribute('position', new THREE.BufferAttribute(posições, 3));
+                this.galaxyGeometry.setAttribute('color', new THREE.BufferAttribute(cores, 3));
+                this.galaxyGeometry.setAttribute('aScale', new THREE.BufferAttribute(escalas, 1));
+                this.galaxyGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(aleatoriedade, 3));
+
+                this.galaxyMaterial = new THREE.ShaderMaterial({
+                    vertexShader: this.galaxyVertexShader,
+                    fragmentShader: this.galaxyFragmentShader,
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    vertexColors: true,
+                    uniforms: {
+                        uTime: { value: 0 },
+                        uSize: { value: this.params.ptSize * this.renderer.getPixelRatio() },
+                        uSpeed: { value: this.params.speed },
+                        uSpin: { value: this.params.spin },
+                        uDensity: { value: this.params.density },
+                        uChaos: { value: this.params.chaos }
+                    }
+                });
+
+                this.galaxyPoints = new THREE.Points(this.galaxyGeometry, this.galaxyMaterial);
+                this.scene.add(this.galaxyPoints);
+            }
+
+            /**
+             * INSTANCIAÇÃO DINÂMICA DO SISTEMA DE MAPAS DE CLASSES ORBITAIS
+             */
+            construirSistemaPlanetarioPOO() {
+                this.instanciasPlanetas = [];
+                this.planetGroup = new THREE.Group();
+                this.scene.add(this.planetGroup);
+
+                // Instanciação individual baseada nas subclasses estendidas
+                const p1 = new PlanetaMagma('NúcleoMagma', 0.38, 2.8, 0.8, '#ff4500', GeradorTexturaProcedural.criarTexturaMagma());
+                const p2 = new PlanetaGasoso('GiganteGasoso', 0.75, 4.6, 0.5, '#9d4edd', GeradorTexturaProcedural.criarTexturaGiganteGasoso());
+                const p3 = new PlanetaAtmosfericoPadrao('GeloGlacial', 0.42, 6.2, 0.35, '#00f2fe', GeradorTexturaProcedural.criarTexturaAtmosferica('#005f73', '#0a9396'));
+                const p4 = new PlanetaAtmosfericoPadrao('PlacaTectonica', 0.45, 7.8, 0.25, '#10b981', GeradorTexturaProcedural.criarTexturaAtmosferica('#1b4332', '#40916c'));
+                const p5 = new PlanetaAtmosfericoPadrao('AuraOceanica', 0.48, 11.2, 0.15, '#4cc9f0', GeradorTexturaProcedural.criarTexturaAtmosferica('#03045e', '#0077b6'));
+                const p6 = new PlanetaAtmosfericoPadrao('VaporToxico', 0.35, 13.5, 0.08, '#ccff33', GeradorTexturaProcedural.criarTexturaAtmosferica('#4d908e', '#f9c74f'));
+
+                this.instanciasPlanetas.push(p1, p2, p3, p4, p5, p6);
+
+                this.instanciasPlanetas.forEach((planeta) => {
+                    planeta.inicializarMalhas();
+                    
+                    // Aplicação manual de matrizes Euler aleatórias para inclinação dos planos de translação
+                    planeta.grupoRaiz.rotation.x = (Math.random() - 0.5) * 0.22;
+                    planeta.grupoRaiz.rotation.z = (Math.random() - 0.5) * 0.22;
+                    
+                    this.planetGroup.add(planeta.grupoRaiz);
+                });
+            }
+
+            construirCinturaoAsteroidesInstanced() {
+                const count = 60000;
+                const baseGeom = new THREE.IcosahedronGeometry(0.04, 1);
+                const posAttr = baseGeom.attributes.position;
+                
+                // Laço de perturbação geométrica por extenso para modelagem irregular de superfícies sólidas
+                for(let i = 0; i < posAttr.count; i++) {
+                    const x = posAttr.getX(i); const y = posAttr.getY(i); const z = posAttr.getZ(i);
+                    const fatorDeForma = 1.0 + (Math.random() - 0.5) * 0.38;
+                    posAttr.setXYZ(i, x * fatorDeForma, y * fatorDeForma, z * fatorDeForma);
+                }
+                baseGeom.computeVertexNormals();
+
+                const mat = new THREE.MeshStandardMaterial({ color: '#2b2d42', roughness: 0.95, metalness: 0.15 });
+                this.asteroidInstancedMesh = new THREE.InstancedMesh(baseGeom, mat, count);
+                
+                this.asteroidData = [];
+                const dMatrix = new THREE.Matrix4();
+                const posVec = new THREE.Vector3();
+                const rotEuler = new THREE.Euler();
+                const scaleVec = new THREE.Vector3();
+
+                for(let i = 0; i < count; i++) {
+                    const raioOrbit = 6.8 + Math.random() * 1.0;
+                    const anguloRandom = Math.random() * Math.PI * 2;
+                    const desvioY = (Math.random() - 0.5) * 0.2;
+
+                    posVec.set(Math.cos(anguloRandom) * raioOrbit, desvioY, Math.sin(anguloRandom) * raioOrbit);
+                    rotEuler.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                    
+                    const escalaRnd = 0.4 + Math.pow(Math.random(), 3) * 1.6;
+                    scaleVec.set(escalaRnd, escalaRnd, escalaRnd);
+
+                    dMatrix.compose(posVec, new THREE.Quaternion().setFromEuler(rotEuler), scaleVec);
+                    this.asteroidInstancedMesh.setMatrixAt(i, dMatrix);
+
+                    this.asteroidData.push({
+                        radius: raioOrbit, angle: anguloRandom,
+                        speed: 0.16 + Math.random() * 0.09, y: desvioY,
+                        rotX: Math.random() * 0.02, rotY: Math.random() * 0.02,
+                        currRotX: rotEuler.x, currRotY: rotEuler.y
+                    });
+                }
+                this.asteroidInstancedMesh.instanceMatrix.needsUpdate = true;
+                this.scene.add(this.asteroidInstancedMesh);
+            }
+
+            /**
+             * CUSTOM CHROMATIC ABERRATION SHADER (INJEÇÃO DE SHADER PASS MANUAL)
+             */
+            initPipelinePosProcessamentoAvancado() {
+                this.composer = new THREE.EffectComposer(this.renderer);
+                this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
+                
+                this.bloomPass = new THREE.UnrealBloomPass(
+                    new THREE.Vector2(window.innerWidth, window.innerHeight),
+                    this.params.bloom, 0.6, 0.1
+                );
+                this.composer.addPass(this.bloomPass);
+
+                // Shader pass customizado de pós-processamento para Aberração Cromática Radial e Vinheta
+                const customOpticsShader = {
+                    uniforms: {
+                        "tDiffuse": { value: null },
+                        "uDistortion": { value: 0.0025 },
+                        "uVignette": { value: 0.95 }
+                    },
+                    vertexShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform sampler2D tDiffuse;
+                        uniform float uDistortion;
+                        uniform float uVignette;
+                        varying vec2 vUv;
+                        
+                        void main() {
+                            vec2 uvCentro = vUv - 0.5;
+                            float distRadial = dot(uvCentro, uvCentro);
+                            
+                            // Deslocamento espectral de canais RGB
+                            vec2 rUv = vUv + uvCentro * distRadial * uDistortion;
+                            vec2 bUv = vUv - uvCentro * distRadial * uDistortion;
+                            
+                            float r = texture2D(tDiffuse, rUv).r;
+                            float g = texture2D(tDiffuse, vUv).g;
+                            float b = texture2D(tDiffuse, bUv).b;
+                            
+                            // Cálculo manual de escurecimento periférico (Vignette)
+                            float vignetteAmount = smoothstep(uVignette, uVignette - 0.45, distRadial + 0.35);
+                            
+                            gl_FragColor = vec4(vec3(r, g, b) * vignetteAmount, 1.0);
+                        }
+                    `
+                };
+
+                this.opticsPass = new THREE.ShaderPass(customOpticsShader);
+                this.composer.addPass(this.opticsPass);
+            }
+
+            configurarInterfaceEBindings() {
+                const conectarSlider = (id, chave, isUniform = true) => {
+                    const slider = document.getElementById(`input-${id}`);
+                    const label = document.getElementById(`lbl-${id}`);
+                    
+                    slider.addEventListener('input', (e) => {
+                        const val = parseFloat(e.target.value);
+                        label.innerText = val.toFixed(id === 'ptsize' ? 0 : 2);
+                        this.params[chave] = val;
+                        
+                        if(isUniform && this.galaxyMaterial) {
+                            if(chave === 'ptSize') {
+                                this.galaxyMaterial.uniforms.uSize.value = val * this.renderer.getPixelRatio();
+                            } else {
+                                this.galaxyMaterial.uniforms[`u${chave.charAt(0).toUpperCase() + chave.slice(1)}`].value = val;
+                            }
+                        }
+                        if(chave === 'radius' || chave === 'spin' || chave === 'chaos' || chave === 'density') {
+                            this.construirNucleoVortexGalactico();
+                        }
+                        if(chave === 'bloom') {
+                            this.bloomPass.strength = val;
+                        }
+                    });
+                };
+
+                conectarSlider('speed', 'speed');
+                conectarSlider('density', 'density');
+                conectarSlider('radius', 'radius');
+                conectarSlider('spin', 'spin');
+                conectarSlider('chaos', 'chaos');
+                conectarSlider('bloom', 'bloom', false);
+                conectarSlider('ptsize', 'ptSize');
+                conectarSlider('planetspeed', 'planetSpeed', false);
+            }
+
+            conectarOuvintesEventos() {
+                window.addEventListener('resize', () => {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.composer.setSize(window.innerWidth, window.innerHeight);
+                    if(this.galaxyMaterial) {
+                        this.galaxyMaterial.uniforms.uSize.value = this.params.ptSize * this.renderer.getPixelRatio();
+                    }
+                });
+
+                const escutaInteracao = () => {
+                    this.idleTime = 0;
+                    this.isUserInteracting = true;
+                    document.getElementById('tel-pilot').innerText = "STANDBY";
+                    document.getElementById('tel-pilot').style.color = "#00f2fe";
+                };
+
+                this.renderer.domElement.addEventListener('mousedown', escutaInteracao);
+                this.renderer.domElement.addEventListener('touchstart', escutaInteracao);
+                this.controls.addEventListener('change', escutaInteracao);
+            }
+
+            /**
+             * LOOP DE CONTROLE DE MATRIZES E ELEMENTOS GEOMÉTRICOS DA PLACA
+             */
+            executarLoopRenderizacao() {
+                requestAnimationFrame(() => this.executarLoopRenderizacao());
+
+                const dt = this.clock.getDelta();
+                const elapsedTime = this.clock.getElapsedTime();
+
+                // Execução e amostragem estável do contador de FPS nativo
+                this.perf.frames++;
+                const tempoAtual = performance.now();
+                if (tempoAtual >= this.perf.lastTime + 500) {
+                    this.perf.frameTime = (tempoAtual - this.perf.lastTime) / this.perf.frames;
+                    const fps = Math.round((this.perf.frames * 1000) / (tempoAtual - this.perf.lastTime));
+                    document.getElementById('fps-display').innerText = `FPS: ${fps}`;
+                    document.getElementById('ms-display').innerText = `LAT: ${this.perf.frameTime.toFixed(1)} ms`;
+                    this.perf.frames = 0;
+                    this.perf.lastTime = tempoAtual;
+                }
+
+                if(this.galaxyMaterial) {
+                    this.galaxyMaterial.uniforms.uTime.value = elapsedTime;
+                    document.getElementById('tel-ang').innerText = (this.params.speed * 0.045 + Math.sin(elapsedTime * 0.4) * 0.003).toFixed(5);
+                    document.getElementById('tel-exp').innerText = (Math.cos(elapsedTime * 0.3) * 0.008).toFixed(5);
+                }
+
+                // Execução de matrizes de atualização de posição dos planetas orientados a objetos
+                this.instanciasPlanetas.forEach((planeta, idx) => {
+                    planeta.atualizarPosicaoCinematica(dt, this.params.planetSpeed);
+                    
+                    // Coleta dados vetoriais de posição em tempo real para exibir no painel lateral de telemetria
+                    if(idx < 3) {
+                        const mX = planeta.meshPrincipal.position.x.toFixed(1);
+                        const mZ = planeta.meshPrincipal.position.z.toFixed(1);
+                        document.getElementById(`tel-p${idx+1}`).innerText = `${mX} / ${mZ}`;
+                    }
+                });
+
+                // Atualização manual em bloco das 60.000 instâncias de asteroides por extração de vetores
+                const dummyMatrix = new THREE.Matrix4();
+                const posVector = new THREE.Vector3();
+                const rotQuat = new THREE.Quaternion();
+                const rotEuler = new THREE.Euler();
+                const scaleVector = new THREE.Vector3();
+
+                for(let i = 0; i < this.asteroidData.length; i++) {
+                    const ast = this.asteroidData[i];
+                    ast.angle += ast.speed * dt * this.params.planetSpeed * 0.1;
+                    ast.currRotX += ast.rotX;
+                    ast.currRotY += ast.rotY;
+
+                    posVector.set(Math.cos(ast.angle) * ast.radius, ast.y, Math.sin(ast.angle) * ast.radius);
+                    rotEuler.set(ast.currRotX, ast.currRotY, 0);
+                    rotQuat.setFromEuler(rotEuler);
+                    
+                    this.asteroidInstancedMesh.getMatrixAt(i, dummyMatrix);
+                    dummyMatrix.decompose(new THREE.Vector3(), new THREE.Quaternion(), scaleVector);
+                    dummyMatrix.compose(posVector, rotQuat, scaleVector);
+                    this.asteroidInstancedMesh.setMatrixAt(i, dummyMatrix);
+                }
+                this.asteroidInstancedMesh.instanceMatrix.needsUpdate = true;
+
+                // Piloto automático cinematográfico suave baseado em interpolação de órbita elíptica
+                this.idleTime += dt;
+                if(this.idleTime > 6.0) {
+                    this.isUserInteracting = false;
+                    document.getElementById('tel-pilot').innerText = "ATIVADO";
+                    document.getElementById('tel-pilot').style.color = "#ff0055";
+                    
+                    const camTime = elapsedTime * 0.055;
+                    this.camera.position.x = Math.cos(camTime) * 16.5;
+                    this.camera.position.z = Math.sin(camTime) * 16.5;
+                    this.camera.position.y = 7.5 + Math.sin(camTime * 0.6) * 2.5;
+                    this.camera.lookAt(0, 0, 0);
+                } else {
+                    this.controls.update();
+                }
+
+                this.composer.render();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.UniverseEngine = new QuantumSpaceEngine();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livrinho legal</title>
+    <style>
+        /* Estilo geral */
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background: linear-gradient(135deg, #ffffff, #ffffff);
+            color: #333;
+        }
+
+        /* Imagem da capa */
+        img {
+            display: block;
+            margin: 0 auto;
+            border: 4px dashed #81ff61;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Títulos */
+        h1, h2 {
+            text-align: center;
+            color: #61ff7b;
+            text-shadow: 2px 2px #fff;
+        }
+
+        /* Autor */
+        p {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+        }
+
+        /* Formulário */
+        form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border: 2px solid #61ff76;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #6eff61;
+        }
+
+        input[type="text"], textarea, select, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #7bff61;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus, input[type="file"]:focus {
+            outline: none;
+            border-color: #ffffff;
+            box-shadow: 0 0 5px #49ff30;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #f8f8f8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2eac49;
+        }
+    </style>
+</head>
+<body>
+    <!-- Imagem da capa do livro -->
+    <img src="Captura de tela 2026-05-25 154003.png" alt="Capa do Livro" style="width:200px;height:auto;">
+
+    <!-- Título do livro -->
+    <h1>O Diário do Chaves</h1>
+
+    <h2>Aluno: Rairaldo Inácio Marinho (20261194010033)</h2>
+    <!-- Nome do autor -->
+    <p>Autor: Roberto Gomes Bolaños</p>
+
+    <!-- Formulário -->
+    <form id="formulario">
+        <!-- Campo para o nome -->
+        <label for="nome">Seu nome:</label>
+        <input type="text" id="nome" name="nome" required>
+
+        <!-- Campo para comentário -->
+        <label for="comentario">Comentário:</label>
+        <textarea id="comentario" name="comentario" rows="4" cols="50" required></textarea>
+
+        <!-- Campo para nota -->
+        <label for="nota">Nota do livro:</label>
+        <select id="nota" name="nota" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+
+        <!-- Campo para upload de PDF -->
+        <label for="arquivo">Envie um PDF:</label>
+        <input type="file" id="arquivo" name="arquivo" accept=".pdf">
+
+        <!-- Botão de envio -->
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
